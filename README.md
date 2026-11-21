@@ -3,7 +3,11 @@
 Personal-use helper for GTA San Andreas on Android: searchable cheat list, floating cheat overlay,
 and a compact keyboard (IME) that types codes as real key events. No internet permission, no ads, no libraries.
 
-## Build
+## Install (no PC needed)
+Open the **Releases** page of this repo on your phone, download `SA-CheatBoard.apk`, and install it
+(allow "install unknown apps" for your browser when asked). It is a debug-signed build of the source in this repo.
+
+## Build yourself
 1. Open this folder in Android Studio (Giraffe or newer), let Gradle sync.
 2. Run on your phone (USB debugging), or Build > Build APK(s) and sideload `app-debug.apk`.
 
