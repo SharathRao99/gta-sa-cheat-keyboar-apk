@@ -199,8 +199,18 @@ class OverlayService : Service() {
     }
 
     private fun fire(text: String, name: String) {
+        if (KeyInjector.ready()) {
+            // Type it into the game as key events, then collapse to the small icon.
+            setStatus("typing $text…")
+            applyExpanded?.invoke(false)
+            KeyInjector.type(text) { ok, msg ->
+                setStatus(msg)
+                if (!ok) { copyToClipboard(text) }
+            }
+            return
+        }
         copyToClipboard(text)
-        setStatus("copied $text")
+        setStatus("copied $text (Shizuku not ready)")
         // Collapse to the small icon after copying.
         handler.postDelayed({ applyExpanded?.invoke(false) }, 600)
     }

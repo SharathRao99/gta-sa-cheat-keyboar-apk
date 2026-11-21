@@ -16,6 +16,7 @@ import android.widget.Toast
 class MainActivity : Activity() {
 
     private lateinit var overlayBtn: TextView
+    private lateinit var shizukuBtn: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +34,7 @@ class MainActivity : Activity() {
             setPadding(dp(8), 0, 0, dp(2))
         })
         root.addView(TextView(this).apply {
-            text = "Tap a cheat to copy it, then type it with a keyboard in the game."
+            text = "With Shizuku connected, the overlay types cheats into the game. Otherwise tap to copy."
             setTextColor(Pal.dim)
             textSize = 12f
             setPadding(dp(8), 0, 0, dp(8))
@@ -45,6 +46,13 @@ class MainActivity : Activity() {
         overlayBtn = button("") { toggleOverlay() }
         row1.addView(overlayBtn)
         root.addView(row1)
+
+        // Shizuku key injection (types the cheat into the game)
+        val row2 = buttonRow()
+        shizukuBtn = button("") { connectShizuku() }
+        row2.addView(shizukuBtn)
+        row2.addView(button("4 Test (types in 5s)") { testInject() })
+        root.addView(row2)
 
         // Cheat list with search; tap copies
         root.addView(
@@ -71,6 +79,39 @@ class MainActivity : Activity() {
 
     private fun updateButtons() {
         overlayBtn.text = if (OverlayService.running) "2 Stop overlay" else "2 Start overlay"
+        shizukuBtn.text = when {
+            KeyInjector.ready() -> "3 Shizuku: connected ✓"
+            KeyInjector.running() -> "3 Shizuku: tap to allow"
+            else -> "3 Shizuku: not running"
+        }
+    }
+
+    private fun connectShizuku() {
+        when {
+            KeyInjector.ready() -> Toast.makeText(this, "Shizuku already connected", Toast.LENGTH_SHORT).show()
+            KeyInjector.running() -> {
+                KeyInjector.requestPermission()
+                shizukuBtn.postDelayed({ updateButtons() }, 1500)
+            }
+            else -> {
+                Toast.makeText(this, "Start Shizuku first (wireless debugging), then come back", Toast.LENGTH_LONG).show()
+                packageManager.getLaunchIntentForPackage(KeyInjector.SHIZUKU_PKG)?.let { startActivity(it) }
+            }
+        }
+    }
+
+    /** Gives you 5s to switch to the game, then types INEEDSOMEHELP (health, armor, $250,000). */
+    private fun testInject() {
+        if (!KeyInjector.ready()) {
+            Toast.makeText(this, "Connect Shizuku first (button 3)", Toast.LENGTH_LONG).show()
+            return
+        }
+        Toast.makeText(this, "Switch to the game now…", Toast.LENGTH_LONG).show()
+        shizukuBtn.postDelayed({
+            KeyInjector.type("INEEDSOMEHELP") { _, msg ->
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            }
+        }, 5000)
     }
 
     private fun toggleOverlay() {

@@ -18,6 +18,12 @@ Type the full phrase during gameplay, e.g. `INEEDSOMEHELP`. "Cheat Activated" co
 On-screen keyboard apps (including this project's earlier keyboard and Hacker's Keyboard) never reach the game, because it never opens a text input.
 If your game has Options > Accessibility > Enter cheat code, use that instead.
 
+## Typing into the game with Shizuku (experimental)
+1. Install Shizuku, connect to Wi-Fi, turn on Developer options > Wireless debugging, and start Shizuku (needed again after each reboot).
+2. In this app tap **3 Shizuku** and allow access.
+3. Open the game, then tap **4 Test**. It types `INEEDSOMEHELP` after 5 seconds. If "Cheat Activated" shows, tapping a cheat in the overlay will type it for you.
+If Shizuku isn't ready, tapping a cheat just copies it as before.
+
 ## Notes
 - Mobile uses full phrases, not the short PC codes (HESOYAM etc.).
 - Cheats can fail some missions and disable achievements.

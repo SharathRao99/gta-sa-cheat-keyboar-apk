@@ -27,5 +27,8 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 
-// No third-party libraries: only the Android framework.
-dependencies { }
+// Shizuku is used only to send key events to the game (optional at runtime).
+dependencies {
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
+}
