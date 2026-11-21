@@ -27,5 +27,9 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 
-// No third-party libraries on purpose: only the Android framework.
-dependencies { }
+// Only dependency: Shizuku API (open source, https://github.com/RikkaApps/Shizuku-API)
+// used to send real key events through Shizuku's shell access.
+dependencies {
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
+}

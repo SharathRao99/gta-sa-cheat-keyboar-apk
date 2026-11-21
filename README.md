@@ -1,7 +1,7 @@
 # SA CheatBoard
 
 Personal-use helper for GTA San Andreas on Android: searchable cheat list, floating cheat overlay,
-and a compact keyboard (IME) that types codes as real key events. No internet permission, no ads, no libraries.
+and a compact keyboard (IME) that types codes as real key events. No internet permission, no ads, its only library is the open-source Shizuku API.
 
 ## Install (no PC needed)
 Open the **Releases** page of this repo on your phone, download `SA-CheatBoard.apk`, and install it
@@ -21,6 +21,14 @@ Open the **Releases** page of this repo on your phone, download `SA-CheatBoard.a
 - Tap = type short code, long-press = type the other variant (phrase). Switch default in the app (button at the top).
 - Status line in the overlay says "keyboard connected" when the game accepts input, otherwise taps copy the code to the clipboard.
 - Star a cheat to add it to the ★ tab.
+
+## Make cheats actually work in the game (Shizuku, Android 11+)
+The game ignores normal keyboard apps, so the app can send real key events through Shizuku:
+1. Install **Shizuku** (Play Store, or its official GitHub releases).
+2. Settings > Developer options > turn on **Wireless debugging**, connect to Wi-Fi.
+3. Open Shizuku > "Start via Wireless debugging" > pair using the pairing-code notification.
+4. In SA CheatBoard tap **5 Shizuku** and allow access. The overlay status will read "Shizuku ready".
+5. Open the game, expand the overlay, tap a cheat. Repeat step 3 start after each phone reboot.
 
 ## Known limits
 - Android only lets a keyboard (IME) send keys. If the game never requests text input, the keyboard may not attach; then

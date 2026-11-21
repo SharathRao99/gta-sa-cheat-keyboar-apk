@@ -189,22 +189,17 @@ class OverlayService : Service() {
     }
 
     private fun keyboardState(): String {
+        if (Typer.shizukuReady()) return "Shizuku ready: real key events"
         val ime = SAKeyboardService.instance
         return when {
-            ime == null -> "keyboard not active: tap = copy"
-            ime.isConnected() -> "keyboard connected"
+            ime == null -> "no Shizuku/keyboard: tap = copy"
+            ime.isConnected() -> "keyboard only (game may ignore)"
             else -> "keyboard idle: tap = copy"
         }
     }
 
     private fun fire(text: String, name: String) {
-        val ime = SAKeyboardService.instance
-        if (ime != null && ime.typeText(text)) {
-            setStatus("typing $text")
-        } else {
-            copyToClipboard(text)
-            setStatus("copied $text")
-        }
+        setStatus(Typer.send(this, text))
     }
 
     private fun setStatus(s: String) { status?.text = s }
