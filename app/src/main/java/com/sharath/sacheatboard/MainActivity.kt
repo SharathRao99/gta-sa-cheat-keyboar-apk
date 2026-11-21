@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -34,7 +33,7 @@ class MainActivity : Activity() {
             setPadding(dp(8), 0, 0, dp(2))
         })
         root.addView(TextView(this).apply {
-            text = "Tap a cheat to copy it. Long-press the setup buttons for tips."
+            text = "Tap a cheat to copy it, then type it with a keyboard in the game."
             setTextColor(Pal.dim)
             textSize = 12f
             setPadding(dp(8), 0, 0, dp(8))
@@ -43,19 +42,9 @@ class MainActivity : Activity() {
         // Setup buttons
         val row1 = buttonRow()
         row1.addView(button("1 Overlay permission") { openOverlayPermission() })
-        row1.addView(button("2 Enable keyboard") {
-            startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
-        })
-        root.addView(row1)
-
-        val row2 = buttonRow()
-        row2.addView(button("3 Switch keyboard") {
-            (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
-        })
         overlayBtn = button("") { toggleOverlay() }
-        row2.addView(overlayBtn)
-        root.addView(row2)
-
+        row1.addView(overlayBtn)
+        root.addView(row1)
 
         // Cheat list with search; tap copies
         root.addView(
@@ -81,7 +70,7 @@ class MainActivity : Activity() {
     }
 
     private fun updateButtons() {
-        overlayBtn.text = if (OverlayService.running) "4 Stop overlay" else "4 Start overlay"
+        overlayBtn.text = if (OverlayService.running) "2 Stop overlay" else "2 Start overlay"
     }
 
     private fun toggleOverlay() {

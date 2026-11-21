@@ -23,8 +23,7 @@ import android.widget.TextView
 
 /**
  * Draggable floating cheat list over the game.
- * Tapping a cheat asks the SA CheatBoard keyboard to type it. If the keyboard isn't connected
- * to the game's input, the code is copied to the clipboard instead.
+ * Tapping a cheat copies its code to the clipboard and collapses back to the small icon.
  */
 class OverlayService : Service() {
 
@@ -121,19 +120,8 @@ class OverlayService : Service() {
             setPadding(dp(10), 0, dp(6), 0)
             setOnClickListener { stopSelf() }
         }
-        val kb = TextView(this).apply {
-            text = "⌨"
-            setTextColor(Pal.accent)
-            textSize = 18f
-            setPadding(dp(10), 0, dp(4), 0)
-            setOnClickListener {
-                val ime = SAKeyboardService.instance
-                setStatus(if (ime != null && ime.showKeyboard()) "keyboard requested" else "keyboard not active")
-            }
-        }
         header.addView(toggle)
         header.addView(st, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        header.addView(kb)
         header.addView(close)
         container.addView(header)
 
@@ -151,11 +139,10 @@ class OverlayService : Service() {
             p.visibility = if (open) View.VISIBLE else View.GONE
             st.visibility = if (open) View.VISIBLE else View.GONE
             close.visibility = if (open) View.VISIBLE else View.GONE
-            kb.visibility = if (open) View.VISIBLE else View.GONE
             toggle.text = if (open) "SA ▾" else "SA"
             toggle.setPadding(0, 0, if (open) dp(10) else 0, 0)
             header.setPadding(if (open) dp(10) else dp(12), dp(8), if (open) dp(6) else dp(12), dp(8))
-            if (open) setStatus(keyboardState())
+            if (open) setStatus("tap a cheat to copy")
         }
         toggle.setOnClickListener { applyExpanded?.invoke(!expanded) }
         applyExpanded?.invoke(false)
@@ -211,18 +198,10 @@ class OverlayService : Service() {
         return null
     }
 
-    private fun keyboardState(): String {
-        val ime = SAKeyboardService.instance
-        return when {
-            ime == null -> "keyboard not active: tap = copy"
-            ime.isConnected() -> "keyboard connected"
-            else -> "keyboard idle: tap = copy"
-        }
-    }
-
     private fun fire(text: String, name: String) {
-        setStatus(Typer.send(this, text))
-        // Auto-collapse to the small icon once the cheat has been sent.
+        copyToClipboard(text)
+        setStatus("copied $text")
+        // Collapse to the small icon after copying.
         handler.postDelayed({ applyExpanded?.invoke(false) }, 600)
     }
 
