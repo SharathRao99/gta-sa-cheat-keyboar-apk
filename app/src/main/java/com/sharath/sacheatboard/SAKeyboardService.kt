@@ -4,6 +4,9 @@ import android.inputmethodservice.InputMethodService
 import android.os.Handler
 import android.util.Log
 import android.os.Looper
+import android.os.SystemClock
+import android.view.InputDevice
+import android.view.KeyCharacterMap
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -22,7 +25,8 @@ class SAKeyboardService : InputMethodService() {
     companion object {
         @Volatile
         var instance: SAKeyboardService? = null
-        private const val KEY_DELAY_MS = 80L
+        private const val KEY_DELAY_MS = 160L   // gap between keys
+        private const val HOLD_MS = 70L         // how long each key stays pressed
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -60,6 +64,27 @@ class SAKeyboardService : InputMethodService() {
         return true
     }
 
+    /**
+     * Press-and-hold like a real keyboard. Games that poll key state each frame miss
+     * instant down+up pairs, and many ignore the "soft keyboard" flag, so this tags the
+     * events as coming from a hardware keyboard source.
+     */
+    private fun pressKey(code: Int) {
+        val ic = currentInputConnection ?: return
+        val down = SystemClock.uptimeMillis()
+        ic.sendKeyEvent(
+            KeyEvent(down, down, KeyEvent.ACTION_DOWN, code, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, 0, InputDevice.SOURCE_KEYBOARD)
+        )
+        handler.postDelayed({
+            val ic2 = currentInputConnection ?: return@postDelayed
+            ic2.sendKeyEvent(
+                KeyEvent(down, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, code, 0, 0,
+                    KeyCharacterMap.VIRTUAL_KEYBOARD, 0, 0, InputDevice.SOURCE_KEYBOARD)
+            )
+        }, HOLD_MS)
+    }
+
     private fun sendChar(ch: Char) {
         val code = when (ch) {
             in 'A'..'Z' -> KeyEvent.KEYCODE_A + (ch - 'A')
@@ -68,7 +93,7 @@ class SAKeyboardService : InputMethodService() {
             else -> return
         }
         Log.d("SACheatBoard", "key $ch -> keycode $code")
-        sendDownUpKeyEvents(code)
+        pressKey(code)
     }
 
     override fun onStartInput(attribute: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
@@ -142,14 +167,14 @@ class SAKeyboardService : InputMethodService() {
                 row.addView(key(ch.toString()) { sendChar(ch) }, keyParams())
             }
             if (r.startsWith("Z")) {
-                row.addView(key("⌫") { sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL) }, keyParams(1.5f))
+                row.addView(key("⌫") { pressKey(KeyEvent.KEYCODE_DEL) }, keyParams(1.5f))
             }
             col.addView(row, LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         }
         val bottom = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        bottom.addView(key("SPACE") { sendDownUpKeyEvents(KeyEvent.KEYCODE_SPACE) }, keyParams(4f))
-        bottom.addView(key("ENTER") { sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER) }, keyParams(2f))
+        bottom.addView(key("SPACE") { pressKey(KeyEvent.KEYCODE_SPACE) }, keyParams(4f))
+        bottom.addView(key("ENTER") { pressKey(KeyEvent.KEYCODE_ENTER) }, keyParams(2f))
         col.addView(bottom, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         return col
