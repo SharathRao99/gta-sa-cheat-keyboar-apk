@@ -18,7 +18,6 @@ class MainActivity : Activity() {
 
     private lateinit var overlayBtn: TextView
     private lateinit var modeBtn: TextView
-    private lateinit var shizukuBtn: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,9 +62,7 @@ class MainActivity : Activity() {
             updateButtons()
             Toast.makeText(this, "Applies to the overlay and keyboard", Toast.LENGTH_SHORT).show()
         }
-        shizukuBtn = button("") { shizukuAction() }
         val row3 = buttonRow()
-        row3.addView(shizukuBtn)
         row3.addView(modeBtn)
         root.addView(row3)
 
@@ -92,24 +89,7 @@ class MainActivity : Activity() {
         updateButtons()
     }
 
-    private fun shizukuAction() {
-        when {
-            Typer.shizukuReady() -> Toast.makeText(this, "Shizuku is ready", Toast.LENGTH_SHORT).show()
-            Typer.shizukuRunning() -> Typer.requestShizuku(100)
-            else -> {
-                val i = packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
-                if (i != null) startActivity(i)
-                else Toast.makeText(this, "Install and start Shizuku first (see README)", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
     private fun updateButtons() {
-        shizukuBtn.text = when {
-            Typer.shizukuReady() -> "5 Shizuku: ready ✓"
-            Typer.shizukuRunning() -> "5 Shizuku: grant access"
-            else -> "5 Shizuku: not running"
-        }
         overlayBtn.text = if (OverlayService.running) "4 Stop overlay" else "4 Start overlay"
         modeBtn.text = if (Prefs.preferShort(this)) "Short codes" else "Full phrases"
     }

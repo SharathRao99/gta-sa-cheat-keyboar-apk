@@ -2,6 +2,7 @@ package com.sharath.sacheatboard
 
 import android.inputmethodservice.InputMethodService
 import android.os.Handler
+import android.util.Log
 import android.os.Looper
 import android.view.Gravity
 import android.view.KeyEvent
@@ -46,7 +47,13 @@ class SAKeyboardService : InputMethodService() {
 
     /** Types letters/digits one by one. Returns false if no app is accepting input right now. */
     fun typeText(text: String): Boolean {
-        if (currentInputConnection == null) return false
+        val ic = currentInputConnection
+        if (ic == null) {
+            Log.w("SACheatBoard", "typeText: no input connection (target app has no focused input)")
+            return false
+        }
+        val ei = currentInputEditorInfo
+        Log.d("SACheatBoard", "typeText '$text' -> pkg=${ei?.packageName} inputType=${ei?.inputType} imeOptions=${ei?.imeOptions}")
         text.uppercase().forEachIndexed { i, ch ->
             handler.postDelayed({ sendChar(ch) }, i * KEY_DELAY_MS)
         }
@@ -60,7 +67,13 @@ class SAKeyboardService : InputMethodService() {
             ' ' -> KeyEvent.KEYCODE_SPACE
             else -> return
         }
+        Log.d("SACheatBoard", "key $ch -> keycode $code")
         sendDownUpKeyEvents(code)
+    }
+
+    override fun onStartInput(attribute: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
+        super.onStartInput(attribute, restarting)
+        Log.d("SACheatBoard", "onStartInput pkg=${attribute?.packageName} inputType=${attribute?.inputType}")
     }
 
     override fun onCreateInputView(): View {
