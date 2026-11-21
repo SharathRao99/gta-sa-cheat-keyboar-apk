@@ -11,7 +11,9 @@ import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -37,6 +39,8 @@ class OverlayService : Service() {
     private var panel: CheatPanel? = null
     private var status: TextView? = null
     private var expanded = false
+    private var applyExpanded: ((Boolean) -> Unit)? = null
+    private val handler = Handler(Looper.getMainLooper())
     private lateinit var lp: WindowManager.LayoutParams
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -130,12 +134,19 @@ class OverlayService : Service() {
         panel = p
         container.addView(p, LinearLayout.LayoutParams(dp(290), dp(340)))
 
-        toggle.setOnClickListener {
-            expanded = !expanded
-            toggle.text = if (expanded) "SA ▾" else "SA ▸"
-            p.visibility = if (expanded) View.VISIBLE else View.GONE
-            if (expanded) setStatus(keyboardState())
+        // Collapsed = just a small "SA" icon. Expanded = full cheat panel.
+        applyExpanded = { open ->
+            expanded = open
+            p.visibility = if (open) View.VISIBLE else View.GONE
+            st.visibility = if (open) View.VISIBLE else View.GONE
+            close.visibility = if (open) View.VISIBLE else View.GONE
+            toggle.text = if (open) "SA ▾" else "SA"
+            toggle.setPadding(0, 0, if (open) dp(10) else 0, 0)
+            header.setPadding(if (open) dp(10) else dp(12), dp(8), if (open) dp(6) else dp(12), dp(8))
+            if (open) setStatus(keyboardState())
         }
+        toggle.setOnClickListener { applyExpanded?.invoke(!expanded) }
+        applyExpanded?.invoke(false)
 
         lp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -183,7 +194,7 @@ class OverlayService : Service() {
     private fun findChildAt(parent: LinearLayout, x: Float, y: Float): View? {
         for (i in 0 until parent.childCount) {
             val c = parent.getChildAt(i)
-            if (x >= c.left && x <= c.right && y >= c.top && y <= c.bottom) return c
+            if (c.visibility == View.VISIBLE && x >= c.left && x <= c.right && y >= c.top && y <= c.bottom) return c
         }
         return null
     }
@@ -200,12 +211,15 @@ class OverlayService : Service() {
 
     private fun fire(text: String, name: String) {
         setStatus(Typer.send(this, text))
+        // Auto-collapse to the small icon once the cheat has been sent.
+        handler.postDelayed({ applyExpanded?.invoke(false) }, 600)
     }
 
     private fun setStatus(s: String) { status?.text = s }
 
     override fun onDestroy() {
         running = false
+        handler.removeCallbacksAndMessages(null)
         root?.let { runCatching { wm.removeView(it) } }
         root = null
         super.onDestroy()
