@@ -2,6 +2,7 @@ package com.sharath.sacheatboard
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import android.view.KeyEvent
 import rikka.shizuku.Shizuku
 
@@ -12,15 +13,18 @@ import rikka.shizuku.Shizuku
  * 3. Clipboard.
  */
 object Typer {
+    private const val TAG = "SACheatBoard"
 
-    fun shizukuRunning(): Boolean = try { Shizuku.pingBinder() } catch (t: Throwable) { false }
+    fun shizukuRunning(): Boolean = try { Shizuku.pingBinder() } catch (t: Throwable) {
+        Log.e(TAG, "shizukuRunning failed", t); false
+    }
 
     fun shizukuReady(): Boolean = try {
         Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-    } catch (t: Throwable) { false }
+    } catch (t: Throwable) { Log.e(TAG, "shizukuReady failed", t); false }
 
     fun requestShizuku(code: Int) {
-        try { Shizuku.requestPermission(code) } catch (t: Throwable) { }
+        try { Shizuku.requestPermission(code) } catch (t: Throwable) { Log.e(TAG, "requestPermission failed", t) }
     }
 
     private fun keycodes(text: String): List<String> = text.uppercase().mapNotNull { ch ->
@@ -43,14 +47,21 @@ object Typer {
                 )
                 m.isAccessible = true
                 val cmd = arrayOf("input", "keyevent") + codes
+                Log.d(TAG, "running: " + cmd.joinToString(" "))
                 val p = m.invoke(null, cmd, null, null) as Process
-                p.waitFor()
-            } catch (_: Throwable) { }
+                val exit = p.waitFor()
+                val out = p.inputStream.bufferedReader().readText()
+                val err = p.errorStream.bufferedReader().readText()
+                Log.d(TAG, "input exit=$exit out=[$out] err=[$err]")
+            } catch (t: Throwable) {
+                Log.e(TAG, "shizukuType failed", t)
+            }
         }.start()
     }
 
     /** Returns a short status message describing what happened. */
     fun send(ctx: Context, text: String): String {
+        Log.d(TAG, "send $text running=${shizukuRunning()} ready=${shizukuReady()}")
         if (shizukuReady()) {
             shizukuType(text)
             return "sent $text via Shizuku"
