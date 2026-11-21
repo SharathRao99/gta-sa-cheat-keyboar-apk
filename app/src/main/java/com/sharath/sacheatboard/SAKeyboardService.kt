@@ -46,6 +46,22 @@ class SAKeyboardService : InputMethodService() {
         super.onDestroy()
     }
 
+    /** Asks Android to show the keyboard window over the current app. */
+    fun showKeyboard(): Boolean {
+        return try {
+            requestShowSelf(0)
+            Log.d("SACheatBoard", "requestShowSelf called")
+            true
+        } catch (t: Throwable) {
+            Log.e("SACheatBoard", "requestShowSelf failed", t); false
+        }
+    }
+
+    override fun onStartInputView(info: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(info, restarting)
+        Log.d("SACheatBoard", "onStartInputView (keyboard window shown) pkg=${info?.packageName}")
+    }
+
     /** True when the focused app currently has an input connection we can type into. */
     fun isConnected(): Boolean = currentInputConnection != null
 
