@@ -17,7 +17,6 @@ import android.widget.Toast
 class MainActivity : Activity() {
 
     private lateinit var overlayBtn: TextView
-    private lateinit var modeBtn: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,14 +56,6 @@ class MainActivity : Activity() {
         row2.addView(overlayBtn)
         root.addView(row2)
 
-        modeBtn = button("") {
-            Prefs.setPreferShort(this, !Prefs.preferShort(this))
-            updateButtons()
-            Toast.makeText(this, "Applies to the overlay and keyboard", Toast.LENGTH_SHORT).show()
-        }
-        val row3 = buttonRow()
-        row3.addView(modeBtn)
-        root.addView(row3)
 
         // Cheat list with search; tap copies
         root.addView(
@@ -91,7 +82,6 @@ class MainActivity : Activity() {
 
     private fun updateButtons() {
         overlayBtn.text = if (OverlayService.running) "4 Stop overlay" else "4 Start overlay"
-        modeBtn.text = if (Prefs.preferShort(this)) "Short codes" else "Full phrases"
     }
 
     private fun toggleOverlay() {

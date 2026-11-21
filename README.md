@@ -18,7 +18,7 @@ Open the **Releases** page of this repo on your phone, download `SA-CheatBoard.a
 4. **4 Start overlay** > the "SA" bubble appears over the game. Drag by its header, tap SA to expand, tap a cheat to type it.
 
 ## Behavior
-- Tap = type short code, long-press = type the other variant (phrase). Switch default in the app (button at the top).
+- Tap = type the full cheat phrase (the mobile version uses phrases, not the short PC codes).
 - Status line in the overlay says "keyboard connected" when the game accepts input, otherwise taps copy the code to the clipboard.
 - Star a cheat to add it to the ★ tab.
 
